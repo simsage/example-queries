@@ -2,6 +2,10 @@ import React from 'react';
 
 import Grid from '@material-ui/core/Grid';
 
+// constants (duplicate from simsage-search.js)
+const api_base = "http://localhost:8080/api";   // the remote SimSage server's location
+
+
 const styles = {
     title: {
         fontSize: '16px',
@@ -112,7 +116,7 @@ export class SingleSearchResult extends React.Component {
         }
     }
     getSource(item) {
-        return "http://localhost:8080/api/document/preview/" + this.props.organisationId + "/" +
+        return api_base + "/document/preview/" + this.props.organisationId + "/" +
                     this.props.kbId + "/" + this.props.clientId + "/" + item.urlId + "/-1"
     }
     render() {
