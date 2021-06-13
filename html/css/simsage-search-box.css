@@ -1,0 +1,52 @@
+/* the simsage search box styling */
+
+.simsage-search {
+    text-align: center;
+}
+
+/* disable chrome outlines */
+.simsage-search textarea:focus, input:focus, select:focus {
+    outline: none;
+}
+
+.simsage-search div:focus {
+    outline: none;
+}
+
+.simsage-search span:focus {
+    outline: none;
+}
+
+/* disable MS x in text-fields */
+.simsage-search input::-ms-clear {
+    display: none;
+}
+
+.search-form input[type=search] {
+    cursor: pointer;
+    outline: none;
+    padding: 10px;
+    border-color: #a0a0a0;
+    color: #000;
+    -webkit-border-radius: 10em;
+    -moz-border-radius: 10em;
+    border-radius: 10em;
+    width: 30%;
+}
+
+.search-form input[type=search]:hover {
+    outline: none;
+}
+
+.search-form input[type=search]:focus {
+    cursor: auto;
+    outline: none;
+}
+
+.search-form input:-moz-placeholder {
+    outline: none;
+}
+.search-form input::-webkit-input-placeholder {
+    outline: none;
+}
+

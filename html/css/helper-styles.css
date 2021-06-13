@@ -1,0 +1,13 @@
+
+/* don't use these styles, they are only used to make the site look better  */
+
+header {
+    background: #e0e0e0;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.my-page-content {
+    padding: 50px;
+}
+

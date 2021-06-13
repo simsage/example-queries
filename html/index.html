@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Example Home Page</title>
+
+    <link rel="icon" type="image/png" href="favicon.png?v=1.0" />
+
+    <!-- don't use this style-sheet, only used for the page itself -->
+    <link rel="stylesheet" href="css/helper-styles.css">
+    <!-- end of helper style-sheet -->
+
+    <!-- this is the simsage search styling -->
+    <link rel="stylesheet" href="css/simsage-search-box.css">
+    <!-- end of the simsage styling -->
+
+</head>
+<body>
+
+    <header class="my-header-class">
+
+        <!-- this is the simsage search box, it submits its results to a new page search-results.html -->
+        <!-- with a query parameter ?search=  -->
+        <div class="simsage-search">
+            <form class="search-form" title="Search" action="search-results.html">
+                <label>
+                    <input type="search" value="" name="search" autocomplete="off" class="search-text search-text-static" maxlength="100" placeholder="Search ..." >
+                </label>
+            </form>
+        </div>
+        <!-- end of the simsage search box -->
+
+    </header>
+
+
+    <div class="my-page-content">
+
+        Page content
+
+    </div>
+
+
+</body>
+</html>
