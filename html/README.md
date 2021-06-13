@@ -16,7 +16,7 @@ The example displays search-results on a new page called `search-results.html`.
 | css/simsage-search-results.css | A css style-sheet for rendering results, error messages, bot messages, detailed views, operator chat and other features | copy |
 | js/jquery-3.6.0.min.js | the jQuery library.  Any version after 1.0.0 will do, required by SimSage for functionality | copy or use your own version |
 | js/socks.js | the Javascript socks library (sockjs-client v1.0.3, http://sockjs.org).  Only needed if you enable the operator (enabled by default) in `simsage-settings.js` | copy if you need operator functionality |
-| js/stomp.js | the Javascript stomp library (Stomp Over WebSocket http://www.jmesnil.net/stomp-websocket/doc/).  Only needed if you enable the operator in `simsage-settings.js` | copy of you need operator functionality |
+| js/stomp.js | the Javascript stomp library (Stomp Over WebSocket http://www.jmesnil.net/stomp-websocket/doc/).  Only needed if you enable the operator in `simsage-settings.js` | copy if you need operator functionality |
 | js/simsage-search.js | the SimSage search functionality library.  Only needed on the `search-results.html` page | copy |
 
 # SimSage settings
