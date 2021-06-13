@@ -19,3 +19,13 @@ The example displays search-results on a new page called `search-results.html`.
 | js/stomp.js | the Javascript stomp library (Stomp Over WebSocket http://www.jmesnil.net/stomp-websocket/doc/).  Only needed if you enable the operator in `simsage-settings.js` | copy of you need operator functionality |
 | js/simsage-search.js | the SimSage search functionality library.  Only needed on the `search-results.html` page | copy |
 
+# SimSage settings
+
+It is vitally important that you change the `simsage-settings.js` file before running this demo.
+You need to contact SimSage and get the appropriate values for this file.  SimSage won't work without these values.
+
+| setting | description | example value |
+| --- | --- | --- |
+| base_url | the URL of the SimSage server you're communicating with. | https://cloud.simsage.ai |
+| organisation_id | your organisation's ID.  You can get one of these from SimSage. The default value is SimSage's own ID for testing. | c276f883-e0c8-43ae-9119-df8b7df9c574 |
+| operator_enabled | Operator functionality enabled / disabled flag.  Set this to `true` if you want to use SimSage's automatic operator handover functionality to connect to a human operator.  This requires the inclusion of the `js/stomp.js` and `js/socks.js` files as described above if set to `true` | true |
