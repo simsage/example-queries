@@ -1,8 +1,20 @@
+# Custom integration with SimSage SiteSearch
+
+SimSage SiteSearch enables websites to use SimSage’s search functionality, including automatic operator-handover.
+Use the following steps to integrate SimSage with your own site.  We have created a simple-to-follow template for here.
+Follow these steps to set up SimSage SiteSearch: 
+
+- Contact SimSage to set up your organisation and get your SimSage ID.
+- Put the SimSage search box in the header of every page on your site using the HTML example above.
+- Add a new SimSage search result page to your site, and use the HTML, Javascript, CSS as shown in the HTML sample above to enable that functionality.
+
+
 # SimSage full HTML search example
 
 This example is a fully integrated search box in the header of a page.  
 The example displays search-results on a new page called `search-results.html`.
 
+Here is a list of the files in this template and their use.
 
 | file | description | usage |
 | --- | --- | --- |
@@ -22,7 +34,7 @@ The example displays search-results on a new page called `search-results.html`.
 # SimSage settings
 
 It is vitally important that you change the `simsage-settings.js` file before running this demo.
-You need to contact SimSage and get the appropriate values for this file.  SimSage won't work without these values.
+You need to contact SimSage and get the appropriate values for your site.  The default settings below only work for the SimSage companies own SiteSearch.
 
 | setting | description | example value |
 | --- | --- | --- |
