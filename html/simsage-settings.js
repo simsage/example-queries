@@ -1,6 +1,5 @@
 
 // the settings for this application - no trailing / on the base_url please
-// it is imperative that we do not expose the SID here (securityID), as it is what protects your account from malicious use
 settings = {
     // the service layer end-point, change "<server>" to ... (no / at end)
     base_url: "https://cloud.simsage.ai",
