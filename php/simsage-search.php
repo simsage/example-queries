@@ -116,6 +116,7 @@ class SimSageSearch
             $this->error = print_r( $data->error, true );
             $this->semantic_search_results = [];
             $this->num_pages = 0;
+            $this->num_results = 0;
         }
     });
   }
@@ -134,5 +135,5 @@ if ( $search->error != "") {
     // NB. primary and secondary highlights are enclosed in {hl1:} ... {:hl1} and {hl2:} ... {:hl2} tags respectively
     echo "you searched for \"" . $search->search_text . "\"\n";
     echo print_r($search->semantic_search_results, true);
-    echo $search->num_pages . " pages";
+    echo "\n" . $search->num_pages . " pages with a total of " . $search->num_results . " results\n";
 }
