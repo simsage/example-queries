@@ -57,7 +57,9 @@ class SimSageSearch
   }
 
   // perform the search
-  function do_search($text) {
+  // @param text string the text to search on
+  // @param search_id string the source id to search on, empty string is all sources
+  function do_search($text, $source_id) {
     // this string is the advanced query-string and is based on the search-text
     // this is used for complex boolean queries and metadata searching - just leave it as this for now
     $search_query_str = '(' . $text . ')';
@@ -67,9 +69,9 @@ class SimSageSearch
       'organisationId' => self::organisation_id,
 	    'kbList' => [self::kb_id],
 	    'clientId' => $this->get_client_id(),
-	    'semanticSearch'=> true,
+	    'semanticSearch' => true,
+      'qnaQuery' => true,
 	    'query' => $search_query_str,
-	    'queryText' => $text,
 	    'numResults' => 1, // number of bot results, set to 1
 	    'scoreThreshold' => self::bot_threshold,
 	    'page' => self::page,
@@ -80,11 +82,13 @@ class SimSageSearch
 	    'spellingSuggest' => self::use_spelling_suggest,
 	    'contextLabel' => '',
 	    'contextMatchBoost' => 0.01,
-	    'sourceId' => self::source_id,
+      'groupSimilarDocuments' => false,
+      'sortByAge' => true,
+	    'sourceId' => $source_id,
 	  ];
 
     // do the search
-    $this->post_message('/api/ops/query', $clientQuery, function($json_data) {
+    $this->post_message('/api/semantic/query', $clientQuery, function($json_data) {
         // process SimSage's results
         $data = json_decode($json_data);
         // messageType is always "message" for async queries, but could be other types for other async API calls,
