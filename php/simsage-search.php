@@ -119,4 +119,4 @@ class SimSageSearch
 
 // example search
 $search = new SimSageSearch();
-$search->do_search("some keywords");
+$search->do_search("some keywords", "");
