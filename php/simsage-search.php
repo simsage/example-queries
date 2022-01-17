@@ -98,7 +98,7 @@ class SimSageSearch
             $data = json_decode($json_data);
             // messageType is always "message" for async queries, but could be other types for other async API calls,
             // be-safe and check it
-            if (array_key_exists('messageType', $data) && $data->messageType == "message") {
+            if ( isset( $data ) && isset( $data->messageType ) && $data->messageType == "message") {
                 // the list of results to display (maximum page_size results)
                 $this->error = "";
                 $this->semantic_search_results = $data->resultList;
