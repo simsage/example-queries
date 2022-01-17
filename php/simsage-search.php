@@ -8,6 +8,7 @@ class SimSageResult
     public $num_results = 0;                    // the total number of results (all results count)
     public $num_pages = 0;                      // the number of pages total to go through
     public $error = "";                         // if not empty, an error
+    public $shard_size_list = [];               // sharding - set by SimSage, leave it alone
 }
 
 class SimSageSearch
@@ -110,7 +111,6 @@ class SimSageSearch
         // this string is the advanced query-string and is based on the search-text
         // this is used for complex boolean queries and metadata searching - just leave it as this for now
         $search_query_str = '(' . $text . ')';
-
         // search in data-structure
         $clientQuery = [
             'organisationId' => self::organisation_id,
