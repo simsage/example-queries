@@ -6,7 +6,6 @@ class SimSageSearch
   // Set your ids and constants for SimSage (must come from SimSage)
   const organisation_id = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
   const kb_id = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
-  const source_id = '1';
 
   // the UK main production server at present  (see https://cloud.simsage.ai/documentation/swagger-ui.html)
   const base_url = 'https://cloud.simsage.ai';
