@@ -4,8 +4,8 @@
 class SimSageSearch
 {
   // Set your ids and constants for SimSage (must come from SimSage)
-  const organisation_id = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
-  const kb_id = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
+  const organisation_id = '7cc95aa3-e1e2-4596-9347-6bcd7b2234c2';
+  const kb_id = '77e30769-012a-47a2-a819-480e40d55e8d';
 
   // the UK main production server at present  (see https://cloud.simsage.ai/documentation/swagger-ui.html)
   const base_url = 'https://cloud.simsage.ai';
@@ -16,10 +16,11 @@ class SimSageSearch
   const page_size = 10;
 
   // result data after search in this class
-  private $semantic_search_results = [];
-  private $num_results = 0;
-  private $error = "";
-  private $num_pages = 0;
+  public $search_text = "";
+  public $semantic_search_results = [];
+  public $num_results = 0;
+  public $error = "";
+  public $num_pages = 0;
 
   // sharding - handled by SimSage - just pass through and store - initially empty-list
   private $shard_size_list = [];
@@ -29,11 +30,14 @@ class SimSageSearch
   const fragment_count = 3;             // number of sub-results per result
   const max_word_distance = 20;         // search algorithm distance betweenw words
   const use_spelling_suggest = false;   // experimental, don't use
-
+  const group_similar_documents = false;   // group documents that are nearly the same together
+  const sort_by_age = true;                // sort documents by age instead of relevance first
+  const perform_qna_query = true;          // also query the Q&A NLU system
+  const semantic_search = true;            // perform the main search (semantic search)
 
   // fixed client-id to keep track (anonymously) of a client's state
   // keep these the same per client (we tend to use a cookie stored value)
-  // makes our statistics / learning algorithms work for you
+  // makes our statistics / learning algorithms work for you, needs to be random per session
   function get_client_id(): string {
     return "6ff9b609-1ddc-4d1d-a98f-07a9d3decb59";
   }
@@ -59,9 +63,10 @@ class SimSageSearch
   // perform the search
   // @param text string the text to search on
   // @param search_id string the source id to search on, empty string is all sources
-  function do_search($text, $source_id) {
+  function do_search( $text, $source_id ) {
     // this string is the advanced query-string and is based on the search-text
     // this is used for complex boolean queries and metadata searching - just leave it as this for now
+    $this->search_text = $text;
     $search_query_str = '(' . $text . ')';
 
 	  // search in data-structure
@@ -69,8 +74,8 @@ class SimSageSearch
         'organisationId' => self::organisation_id,
         'kbList' => [self::kb_id],
         'clientId' => $this->get_client_id(),
-        'semanticSearch' => true,
-        'qnaQuery' => true,
+        'semanticSearch' => self::semantic_search,
+        'qnaQuery' => self::perform_qna_query,
         'query' => $search_query_str,
         'numResults' => 1, // number of bot results, set to 1
         'scoreThreshold' => self::bot_threshold,
@@ -80,8 +85,8 @@ class SimSageSearch
         'fragmentCount' => self::fragment_count,
         'maxWordDistance' => self::max_word_distance,
         'spellingSuggest' => self::use_spelling_suggest,
-        'groupSimilarDocuments' => false,
-        'sortByAge' => true,
+        'groupSimilarDocuments' => self::group_similar_documents,
+        'sortByAge' => self::sort_by_age,
         'sourceId' => $source_id,
 	  ];
 
@@ -106,13 +111,11 @@ class SimSageSearch
             } else {
                 $this->num_pages = round($this->num_pages);
             }
-            // NB. primary and secondary highlights are enclosed in {hl1:} ... {:hl1} and {hl2:} ... {:hl2} tags respectively
-            echo print_r($data->resultList, true);
-            echo $this->num_pages . " pages";
-            // echo $json_data;
+
         } else if (array_key_exists( 'error', $data)) {
             $this->error = print_r( $data->error, true );
-            echo print_r($this->error, true);
+            $this->semantic_search_results = [];
+            $this->num_pages = 0;
         }
     });
   }
@@ -121,4 +124,15 @@ class SimSageSearch
 
 // example search
 $search = new SimSageSearch();
+
 $search->do_search("some keywords", "");
+
+// display the search results or error
+if ( $search->error != "") {
+    echo "error: " . $search->error;
+} else {
+    // NB. primary and secondary highlights are enclosed in {hl1:} ... {:hl1} and {hl2:} ... {:hl2} tags respectively
+    echo "you searched for \"" . $search->search_text . "\"\n";
+    echo print_r($search->semantic_search_results, true);
+    echo $search->num_pages . " pages";
+}
