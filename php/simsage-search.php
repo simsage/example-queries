@@ -1,125 +1,127 @@
-
 <?php
 
 class SimSageSearch
 {
-  // Set your ids and constants for SimSage (must come from SimSage)
-  const organisation_id = '7cc95aa3-e1e2-4596-9347-6bcd7b2234c2';
-  const kb_id = '77e30769-012a-47a2-a819-480e40d55e8d';
+    // Set your ids and constants for SimSage (must come from SimSage)
+    const organisation_id = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
+    const kb_id = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
 
-  // the UK main production server at present  (see https://cloud.simsage.ai/documentation/swagger-ui.html)
-  const base_url = 'https://cloud.simsage.ai';
-  const api_version = '1';
+    // the UK main production server at present  (see https://cloud.simsage.ai/documentation/swagger-ui.html)
+    const base_url = 'https://cloud.simsage.ai';
+    const api_version = '1';
 
-  // pagination - starting at page 0, etc.
-  const page = 0;
-  const page_size = 10;
+    // pagination - starting at page 0, etc.
+    const page = 0;
+    const page_size = 10;
 
-  // result data after search in this class
-  public $search_text = "";
-  public $semantic_search_results = [];
-  public $num_results = 0;
-  public $error = "";
-  public $num_pages = 0;
+    // result data after search in this class
+    public $search_text = "";
+    public $semantic_search_results = [];
+    public $num_results = 0;
+    public $error = "";
+    public $num_pages = 0;
 
-  // sharding - handled by SimSage - just pass through and store - initially empty-list
-  private $shard_size_list = [];
+    // sharding - handled by SimSage - just pass through and store - initially empty-list
+    private $shard_size_list = [];
 
-  // a few constants - just leave them as they are
-  const bot_threshold = 0.8125;         // neural network conversation sensitivity
-  const fragment_count = 3;             // number of sub-results per result
-  const max_word_distance = 20;         // search algorithm distance betweenw words
-  const use_spelling_suggest = false;   // experimental, don't use
-  const group_similar_documents = false;   // group documents that are nearly the same together
-  const sort_by_age = true;                // sort documents by age instead of relevance first
-  const perform_qna_query = true;          // also query the Q&A NLU system
-  const semantic_search = true;            // perform the main search (semantic search)
+    // a few constants - just leave them as they are
+    const bot_threshold = 0.8125;         // neural network conversation sensitivity
+    const fragment_count = 3;             // number of sub-results per result
+    const max_word_distance = 20;         // search algorithm distance betweenw words
+    const use_spelling_suggest = false;   // experimental, don't use
+    const group_similar_documents = false;   // group documents that are nearly the same together
+    const sort_by_age = true;                // sort documents by age instead of relevance first
+    const perform_qna_query = true;          // also query the Q&A NLU system
+    const semantic_search = true;            // perform the main search (semantic search)
 
-  // fixed client-id to keep track (anonymously) of a client's state
-  // keep these the same per client (we tend to use a cookie stored value)
-  // makes our statistics / learning algorithms work for you, needs to be random per session
-  function get_client_id(): string {
-    return "6ff9b609-1ddc-4d1d-a98f-07a9d3decb59";
-  }
+    // fixed client-id to keep track (anonymously) of a client's state
+    // keep these the same per client (we tend to use a cookie stored value)
+    // makes our statistics / learning algorithms work for you, needs to be random per session
+    function get_client_id(): string
+    {
+        return "6ff9b609-1ddc-4d1d-a98f-07a9d3decb59";
+    }
 
-  // helper - post a message using jQuery
-  function post_message($endPoint, $data, $callback) {
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, self::base_url . $endPoint);
-    curl_setopt($ch, CURLOPT_POST, 1);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-      "Content-Type: application/json",
-      "API-Version: " . self::api_version,
-    ));
-    // make the call and echo out the result JSON
-    $json_result = curl_exec ($ch);
-    curl_close ($ch);
-    $callback($json_result);
-  }
+    // helper - post a message using jQuery
+    function post_message($endPoint, $data, $callback)
+    {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, self::base_url . $endPoint);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            "Content-Type: application/json",
+            "API-Version: " . self::api_version,
+        ));
+        // make the call and echo out the result JSON
+        $json_result = curl_exec($ch);
+        curl_close($ch);
+        $callback($json_result);
+    }
 
-  // perform the search
-  // @param text string the text to search on
-  // @param search_id string the source id to search on, empty string is all sources
-  function do_search( $text, $source_id ) {
-    // this string is the advanced query-string and is based on the search-text
-    // this is used for complex boolean queries and metadata searching - just leave it as this for now
-    $this->search_text = $text;
-    $search_query_str = '(' . $text . ')';
+    // perform the search
+    // @param text string the text to search on
+    // @param search_id string the source id to search on, empty string is all sources
+    function do_search($text, $source_id)
+    {
+        // this string is the advanced query-string and is based on the search-text
+        // this is used for complex boolean queries and metadata searching - just leave it as this for now
+        $this->search_text = $text;
+        $search_query_str = '(' . $text . ')';
 
-	  // search in data-structure
-	  $clientQuery = [
-        'organisationId' => self::organisation_id,
-        'kbList' => [self::kb_id],
-        'clientId' => $this->get_client_id(),
-        'semanticSearch' => self::semantic_search,
-        'qnaQuery' => self::perform_qna_query,
-        'query' => $search_query_str,
-        'numResults' => 1, // number of bot results, set to 1
-        'scoreThreshold' => self::bot_threshold,
-        'page' => self::page,
-        'pageSize' => self::page_size,
-        'shardSizeList' => $this->shard_size_list,
-        'fragmentCount' => self::fragment_count,
-        'maxWordDistance' => self::max_word_distance,
-        'spellingSuggest' => self::use_spelling_suggest,
-        'groupSimilarDocuments' => self::group_similar_documents,
-        'sortByAge' => self::sort_by_age,
-        'sourceId' => $source_id,
-	  ];
+        // search in data-structure
+        $clientQuery = [
+            'organisationId' => self::organisation_id,
+            'kbList' => [self::kb_id],
+            'clientId' => $this->get_client_id(),
+            'semanticSearch' => self::semantic_search,
+            'qnaQuery' => self::perform_qna_query,
+            'query' => $search_query_str,
+            'numResults' => 1, // number of bot results, set to 1
+            'scoreThreshold' => self::bot_threshold,
+            'page' => self::page,
+            'pageSize' => self::page_size,
+            'shardSizeList' => $this->shard_size_list,
+            'fragmentCount' => self::fragment_count,
+            'maxWordDistance' => self::max_word_distance,
+            'spellingSuggest' => self::use_spelling_suggest,
+            'groupSimilarDocuments' => self::group_similar_documents,
+            'sortByAge' => self::sort_by_age,
+            'sourceId' => $source_id,
+        ];
 
-    // do the search
-    $this->post_message('/api/semantic/query', $clientQuery, function($json_data) {
-        // process SimSage's results
-        $data = json_decode($json_data);
-        // messageType is always "message" for async queries, but could be other types for other async API calls,
-        // be-safe and check it
-        if (array_key_exists( 'messageType', $data) && $data->messageType == "message") {
-            // the list of results to display (maximum page_size results)
-            $this->error = "";
-            $this->semantic_search_results = $data->resultList;
-            // total number of results (outside pagination)
-            $this->num_results = $data->totalDocumentCount;
-            // get the page sharding
-            $this->shard_size_list = $data->shardSizeList;
-            // work out how many pages there are
-            $this->num_pages = $data->totalDocumentCount / self::page_size;
-            if (round($this->num_pages) != $this->num_pages) {
-                $this->num_pages = round($this->num_pages) + 1;
-            } else {
-                $this->num_pages = round($this->num_pages);
+        // do the search
+        $this->post_message('/api/semantic/query', $clientQuery, function ($json_data) {
+            // process SimSage's results
+            $data = json_decode($json_data);
+            // messageType is always "message" for async queries, but could be other types for other async API calls,
+            // be-safe and check it
+            if (array_key_exists('messageType', $data) && $data->messageType == "message") {
+                // the list of results to display (maximum page_size results)
+                $this->error = "";
+                $this->semantic_search_results = $data->resultList;
+                // total number of results (outside pagination)
+                $this->num_results = $data->totalDocumentCount;
+                // get the page sharding
+                $this->shard_size_list = $data->shardSizeList;
+                // work out how many pages there are
+                $this->num_pages = $data->totalDocumentCount / self::page_size;
+                if (round($this->num_pages) != $this->num_pages) {
+                    $this->num_pages = round($this->num_pages) + 1;
+                } else {
+                    $this->num_pages = round($this->num_pages);
+                }
+
+            } else if (array_key_exists('error', $data)) {
+                $this->error = print_r($data->error, true);
+                $this->semantic_search_results = [];
+                $this->num_pages = 0;
+                $this->num_results = 0;
             }
-
-        } else if (array_key_exists( 'error', $data)) {
-            $this->error = print_r( $data->error, true );
-            $this->semantic_search_results = [];
-            $this->num_pages = 0;
-            $this->num_results = 0;
-        }
-    });
-  }
+        });
+    }
 
 }
 
@@ -129,7 +131,7 @@ $search = new SimSageSearch();
 $search->do_search("some keywords", "");
 
 // display the search results or error
-if ( $search->error != "") {
+if ($search->error != "") {
     echo "error: " . $search->error;
 } else {
     // NB. primary and secondary highlights are enclosed in {hl1:} ... {:hl1} and {hl2:} ... {:hl2} tags respectively
