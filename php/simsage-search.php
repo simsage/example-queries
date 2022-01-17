@@ -79,8 +79,6 @@ class SimSageSearch
 	    'fragmentCount' => self::fragment_count,
 	    'maxWordDistance' => self::max_word_distance,
 	    'spellingSuggest' => self::use_spelling_suggest,
-	    'contextLabel' => '',
-	    'contextMatchBoost' => 0.01,
       'groupSimilarDocuments' => false,
       'sortByAge' => true,
 	    'sourceId' => $source_id,
