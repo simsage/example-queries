@@ -33,7 +33,7 @@ class SimSageSearch
 
   // fixed client-id to keep track (anonymously) of a client's state
   // keep these the same per client (we tend to use a cookie stored value)
-  // makes our statistics / learning algoirthms work for you
+  // makes our statistics / learning algorithms work for you
   function get_client_id(): string {
     return "6ff9b609-1ddc-4d1d-a98f-07a9d3decb59";
   }
