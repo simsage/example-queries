@@ -18,6 +18,7 @@ class SimSageSearch
   // result data after search in this class
   private $semantic_search_results = [];
   private $num_results = 0;
+  private $error = "";
   private $num_pages = 0;
 
   // sharding - handled by SimSage - just pass through and store - initially empty-list
@@ -33,8 +34,8 @@ class SimSageSearch
   // fixed client-id to keep track (anonymously) of a client's state
   // keep these the same per client (we tend to use a cookie stored value)
   // makes our statistics / learning algoirthms work for you
-  function get_client_id() {
-    return uniqid();
+  function get_client_id(): string {
+    return "6ff9b609-1ddc-4d1d-a98f-07a9d3decb59";
   }
 
   // helper - post a message using jQuery
@@ -65,23 +66,23 @@ class SimSageSearch
 
 	  // search in data-structure
 	  $clientQuery = [
-      'organisationId' => self::organisation_id,
-	    'kbList' => [self::kb_id],
-	    'clientId' => $this->get_client_id(),
-	    'semanticSearch' => true,
-      'qnaQuery' => true,
-	    'query' => $search_query_str,
-	    'numResults' => 1, // number of bot results, set to 1
-	    'scoreThreshold' => self::bot_threshold,
-	    'page' => self::page,
-	    'pageSize' => self::page_size,
-	    'shardSizeList' => $this->shard_size_list,
-	    'fragmentCount' => self::fragment_count,
-	    'maxWordDistance' => self::max_word_distance,
-	    'spellingSuggest' => self::use_spelling_suggest,
-      'groupSimilarDocuments' => false,
-      'sortByAge' => true,
-	    'sourceId' => $source_id,
+        'organisationId' => self::organisation_id,
+        'kbList' => [self::kb_id],
+        'clientId' => $this->get_client_id(),
+        'semanticSearch' => true,
+        'qnaQuery' => true,
+        'query' => $search_query_str,
+        'numResults' => 1, // number of bot results, set to 1
+        'scoreThreshold' => self::bot_threshold,
+        'page' => self::page,
+        'pageSize' => self::page_size,
+        'shardSizeList' => $this->shard_size_list,
+        'fragmentCount' => self::fragment_count,
+        'maxWordDistance' => self::max_word_distance,
+        'spellingSuggest' => self::use_spelling_suggest,
+        'groupSimilarDocuments' => false,
+        'sortByAge' => true,
+        'sourceId' => $source_id,
 	  ];
 
     // do the search
@@ -90,8 +91,9 @@ class SimSageSearch
         $data = json_decode($json_data);
         // messageType is always "message" for async queries, but could be other types for other async API calls,
         // be-safe and check it
-        if ($data->messageType == "message") {
+        if (array_key_exists( 'messageType', $data) && $data->messageType == "message") {
             // the list of results to display (maximum page_size results)
+            $this->error = "";
             $this->semantic_search_results = $data->resultList;
             // total number of results (outside pagination)
             $this->num_results = $data->totalDocumentCount;
@@ -108,6 +110,9 @@ class SimSageSearch
             echo print_r($data->resultList, true);
             echo $this->num_pages . " pages";
             // echo $json_data;
+        } else if (array_key_exists( 'error', $data)) {
+            $this->error = print_r( $data->error, true );
+            echo print_r($this->error, true);
         }
     });
   }
