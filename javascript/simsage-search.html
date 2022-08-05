@@ -1,9 +1,12 @@
-
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
 // Set your ids and constants for SimSage (must come from SimSage)
-let organisation_id = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
-let kb_id = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
-// the UK production server at present  (see https://cloud.simsage.ai/documentation/swagger-ui.html)
-let base_url = 'https://cloud.simsage.ai';
+let organisation_id = 'xxxx-xxxx';
+let kb_id = 'xxxx-xxxx';
+
+let server = 'https://cloud.simsage.ai';
 let api_version = '1';
 
 // pagination
@@ -24,15 +27,7 @@ let fragment_count = 1;
 let max_word_distance = 20;
 let use_spelling_suggest = false;
 
-
 ///////////////////////////////////////////////
-// do a search example
-do_search('some keywords');
-
-///////////////////////////////////////////////
-
-
-
 
 
 // get a random number as a 4 digit hex-string
@@ -82,7 +77,7 @@ function get_client_id() {
 
 // helper - post a message using jQuery
 function post_message(endPoint, data, callback) {
-    let url = base_url + endPoint;
+    let url = server + endPoint;
     jQuery.ajax({
         headers: {
             'Content-Type': 'application/json',
@@ -127,20 +122,22 @@ function do_search(text) {
         'maxWordDistance': max_word_distance,
         'spellingSuggest': use_spelling_suggest,
         'contextLabel': '',
-        'contextMatchBoost': 0.01
+        'contextMatchBoost': 0.01,
     };
 
     // do the search
     post_message('/api/semantic/query', clientQuery, function(data) {
-        receive_search_results(data);
+        receive_search_results(text, data);
     });
 }
 
 
 // callback on-result
-function receive_search_results(data) {
+function receive_search_results(query, data) {
     if (data.messageType === 'message') {
         semantic_search_results = [];
+
+        let botText = data.text; // exact query answer?
 
         // did we get semantic search results?
         if (data.resultList) {
@@ -173,13 +170,34 @@ function receive_search_results(data) {
         }
 
         // output the results
-        console.log('the search results');
-        console.log(JSON.stringify(semantic_search_results));
-        console.log('page:' + page);
-        console.log('page-size:' + page_size);
-        console.log('number of results total:' + num_results);
-        console.log('number of page total (given page-size):' + num_pages);
+        jQuery("#t1").text("SimSage search: \"" + query + "\"");
+        jQuery("#t2").text(JSON.stringify(semantic_search_results));
+        jQuery("#t3").text("Q&A (exact) response: " + botText);
+        jQuery("#t4").text("page: " + page);
+        jQuery("#t5").text("page-size: " + page_size);
+        jQuery("#t6").text("number of results: " + num_results);
+        jQuery("#t7").text("number of pages: " + num_pages);
 
     } // if message-type is right
 }
-
+</script>
+</head>
+<body>
+    <h2><div id="t1"></div></h2>
+    <h3>
+        <div id="t3"></div>
+    </h3>
+    <h3>
+        <div id="t4"></div>
+        <div id="t5"></div>
+        <div id="t6"></div>
+        <div id="t7"></div>
+    </h3>
+    <h4>semantic search json</h4>
+    <code><div id="t2"></div></code>
+</body>
+<script>
+    // do a search example
+    jQuery(document).ready(do_search('where does Robert work?'));
+</script>
+</html>
