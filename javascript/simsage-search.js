@@ -1,10 +1,20 @@
 
 // Set your ids and constants for SimSage (must come from SimSage)
-let organisation_id = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
-let kb_id = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx';
-// the UK production server at present  (see https://cloud.simsage.ai/documentation/swagger-ui.html)
-let base_url = 'https://cloud.simsage.ai';
+// the service layer end-point, change "<server>" to ... (no / at end)
+const base_url = "https://test.simsage.ai";
+// the organisation's id to search - all sanitized
+const organisation_id = "c276f883-e0c8-43ae-9119-df8b7df9c574";
+// the knowledge base's Id (selected site) and security id (sid)
+const kb_id = "46ff0c75-7938-492c-ab50-442496f5de51";
+
+//////////////////////////////////////////////////////////////////////
+// these credentials are an example only - they're used by SimSage
+// if it doesn't allow anonymous access (which is default)
+const email = "test@simsage.nz";
+const password = "Banaan3125!";
+
 let api_version = '1';
+let session_id = get_local_storage("session_id");
 
 // pagination
 let page = 0;
@@ -26,13 +36,32 @@ let use_spelling_suggest = false;
 
 
 ///////////////////////////////////////////////
-// do a search example
-do_search('some keywords');
+
+function sign_in_and_search_for(email, password, text, callback) {
+    if (!session_id) {
+        const sign_in_data = {
+            "email": email,
+            "password": password
+        };
+        post_message('/api/auth/sign-in',
+            sign_in_data,
+            function (data) {
+                // got it?  set the session_id
+                if (data && data.session && data.session.id) {
+                    session_id = data.session.id;
+                    set_local_storage("session_id", session_id);
+                    // and perform a search
+                    do_search(text, callback);
+                }
+            }
+        );
+    } else {
+        // we have a session, perform a search
+        do_search(text, callback);
+    }
+}
 
 ///////////////////////////////////////////////
-
-
-
 
 
 // get a random number as a 4 digit hex-string
@@ -61,33 +90,49 @@ function has_local_storage() {
 }
 
 
+function get_local_storage(name) {
+    let hasLs = has_local_storage();
+    if (hasLs) {
+        return localStorage.getItem(name);
+    }
+    return "";
+}
+
+
+function set_local_storage(name, value) {
+    let hasLs = has_local_storage();
+    if (hasLs) {
+        localStorage.setItem(name, value);
+    }
+}
+
+
 // fixed client-id to keep track (anonymously) of clients
 // this aggregates number of searches per day per unique user
 // what users search for etc.
 function get_client_id() {
-    let clientId = "";
     let key = 'simsearch_client_id';
-    let hasLs = has_local_storage();
-    if (hasLs) {
-        clientId = localStorage.getItem(key);
-    }
-    if (!clientId || clientId.length === 0) {
-        clientId = guid(); // create a new client id
-        if (hasLs) {
-            localStorage.setItem(key, clientId);
-        }
+    let clientId = get_local_storage(key);
+    if (!clientId) {
+        clientId = guid();
+        set_local_storage(key, clientId);
     }
     return clientId;
 }
 
+
 // helper - post a message using jQuery
 function post_message(endPoint, data, callback) {
     let url = base_url + endPoint;
+    let headers = {
+        'Content-Type': 'application/json',
+        'API-Version': api_version,
+    };
+    if (session_id && session_id.length > 0) {
+        headers["session-id"] = session_id;
+    }
     jQuery.ajax({
-        headers: {
-            'Content-Type': 'application/json',
-            'API-Version': api_version,
-        },
+        headers: headers,
         'data': JSON.stringify(data),
         'type': 'POST',
         'url': url,
@@ -105,40 +150,32 @@ function post_message(endPoint, data, callback) {
 
 
 // perform the search
-function do_search(text) {
-    // this string is the advanced query-string and is based on the search-text
-    // this is used for complex boolean queries and metadata searching - just leave it as this for now
-    let search_query_str = '(' + text + ')';
-
+function do_search(text, callback) {
+    console.log("session_id", session_id);
     // search in data-structure
     let clientQuery = {
         'organisationId': organisation_id,
         'kbList': [kb_id],
-        'clientId': get_client_id(),
+        'clientId': session_id ? session_id : get_client_id(),
         'semanticSearch': true,
-        'query': search_query_str,
-        'queryText': text,
-        'numResults': 1, // number of bot results to return, set to 1
-        'scoreThreshold': bot_threshold,
+        'query': text,
         'page': page,
         'pageSize': page_size,
         'shardSizeList': shard_size_list,
         'fragmentCount': fragment_count,
         'maxWordDistance': max_word_distance,
         'spellingSuggest': use_spelling_suggest,
-        'contextLabel': '',
-        'contextMatchBoost': 0.01
     };
 
     // do the search
     post_message('/api/semantic/query', clientQuery, function(data) {
-        receive_search_results(data);
+        receive_search_results(data, callback);
     });
 }
 
 
 // callback on-result
-function receive_search_results(data) {
+function receive_search_results(data, callback) {
     if (data.messageType === 'message') {
         semantic_search_results = [];
 
@@ -179,6 +216,10 @@ function receive_search_results(data) {
         console.log('page-size:' + page_size);
         console.log('number of results total:' + num_results);
         console.log('number of page total (given page-size):' + num_pages);
+
+        if (callback) {
+            callback(semantic_search_results);
+        }
 
     } // if message-type is right
 }
