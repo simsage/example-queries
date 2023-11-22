@@ -12,7 +12,7 @@ window.ENV = {
     kb_id: '46ff0c75-7938-492c-ab50-442496f5de51',
     // user details for singing in - needed to get a session
     email: 'test@simsage.nz',
-    password: 'Banaan3125!',
+    password: '',
     // search parameters
     score_threshold: 0.8125,
     fragment_count: 10,
