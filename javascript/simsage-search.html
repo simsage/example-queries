@@ -10,7 +10,19 @@
 <script>
     // do a search example
     jQuery(document).ready(() => {
-        sign_in_and_search_for(email, password, 'test', (result_list) => {
+        const data = {
+            // Set your ids and constants for SimSage (must come from SimSage)
+            // the service layer end-point, change "<server>" to ... (no / at end)
+            base_url: "https://test.simsage.ai",
+            // the organisation id to search
+            organisation_id: "",
+            // the knowledge base id
+            kb_id: "",
+            // the credentials for talking to the API / getting a session
+            email: "",
+            password: "",
+        };
+        sign_in_and_search_for('test', data, (result_list) => {
             for (const result of result_list) {
                 if (result && result.textList && result.textList.length > 0) {
                     const text = result.textList[0];

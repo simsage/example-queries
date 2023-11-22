@@ -1,18 +1,4 @@
 
-// Set your ids and constants for SimSage (must come from SimSage)
-// the service layer end-point, change "<server>" to ... (no / at end)
-const base_url = "https://test.simsage.ai";
-// the organisation's id to search - all sanitized
-const organisation_id = "c276f883-e0c8-43ae-9119-df8b7df9c574";
-// the knowledge base's Id (selected site) and security id (sid)
-const kb_id = "46ff0c75-7938-492c-ab50-442496f5de51";
-
-//////////////////////////////////////////////////////////////////////
-// these credentials are an example only - they're used by SimSage
-// if it doesn't allow anonymous access (which is default)
-const email = "test@simsage.nz";
-const password = "Banaan3125!";
-
 let api_version = '1';
 let session_id = get_local_storage("session_id");
 
@@ -29,7 +15,6 @@ let num_pages = 0;
 let shard_size_list = [];
 
 // a few constants - just leave them as they are
-let bot_threshold = 0.8125;
 let fragment_count = 1;
 let max_word_distance = 20;
 let use_spelling_suggest = false;
@@ -37,13 +22,13 @@ let use_spelling_suggest = false;
 
 ///////////////////////////////////////////////
 
-function sign_in_and_search_for(email, password, text, callback) {
+function sign_in_and_search_for(text, data, callback) {
     if (!session_id) {
         const sign_in_data = {
-            "email": email,
-            "password": password
+            "email": data.email,
+            "password": data.password
         };
-        post_message('/api/auth/sign-in',
+        post_message(data.base_url, '/api/auth/sign-in',
             sign_in_data,
             function (data) {
                 // got it?  set the session_id
@@ -51,13 +36,13 @@ function sign_in_and_search_for(email, password, text, callback) {
                     session_id = data.session.id;
                     set_local_storage("session_id", session_id);
                     // and perform a search
-                    do_search(text, callback);
+                    do_search(text, data, callback);
                 }
             }
         );
     } else {
         // we have a session, perform a search
-        do_search(text, callback);
+        do_search(text, data, callback);
     }
 }
 
@@ -122,7 +107,7 @@ function get_client_id() {
 
 
 // helper - post a message using jQuery
-function post_message(endPoint, data, callback) {
+function post_message(base_url, endPoint, data, callback) {
     let url = base_url + endPoint;
     let headers = {
         'Content-Type': 'application/json',
@@ -150,12 +135,11 @@ function post_message(endPoint, data, callback) {
 
 
 // perform the search
-function do_search(text, callback) {
-    console.log("session_id", session_id);
+function do_search(text, data, callback) {
     // search in data-structure
     let clientQuery = {
-        'organisationId': organisation_id,
-        'kbList': [kb_id],
+        'organisationId': data.organisation_id,
+        'kbList': [data.kb_id],
         'clientId': session_id ? session_id : get_client_id(),
         'semanticSearch': true,
         'query': text,
@@ -168,7 +152,7 @@ function do_search(text, callback) {
     };
 
     // do the search
-    post_message('/api/semantic/query', clientQuery, function(data) {
+    post_message(data.base_url, '/api/semantic/query', clientQuery, function(data) {
         receive_search_results(data, callback);
     });
 }
