@@ -23,6 +23,7 @@ let use_spelling_suggest = false;
 ///////////////////////////////////////////////
 
 function sign_in_and_search_for(text, data, callback) {
+    // if we don't have a session - we need to get one - sign-in!
     if (!session_id) {
         const sign_in_data = {
             "email": data.email,
@@ -201,6 +202,7 @@ function receive_search_results(data, callback) {
         console.log('number of results total:' + num_results);
         console.log('number of page total (given page-size):' + num_pages);
 
+        // and call back to the interested parties with the data
         if (callback) {
             callback(semantic_search_results);
         }
