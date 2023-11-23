@@ -24,7 +24,7 @@ def sign_in(username, password):
     json_result = x.json()
     if "error" in json_result:
         raise ValueError("sign-in:" + json_result["error"])
-    if x.status_code not in 200.299:
+    if x.status_code not in range(200, 299):
         raise ValueError("sign-in: bad http status code " + str(x.status_code))
     return json_result["session"]["id"]
 
@@ -47,7 +47,7 @@ def do_search(session_id, text):
     url = api_base + "/semantic/query"
     header = {"API-Version": "1", "Content-Type": "application/json"}
     x = requests.post(url, json=data, headers=header)
-    if x.status_code not in 200.299:
+    if x.status_code not in range(200, 299):
         raise ValueError("search: bad http status code " + str(x.status_code))
     return x.json()
 
