@@ -123,8 +123,10 @@ class SimSageSearch
             $this->session_id = $sign_in_session['id'];
             return $this->session_id;
         } else if ( isset( $sign_in_result->error) ) {
+            $this->session_id = "";
             return "Error: " . print_r($sign_in_result->error, true);
         } else {
+            $this->session_id = "";
             return "Error: unknown error";
         }
     }
@@ -213,7 +215,7 @@ class SimSageSearch
 
 // example search
 $search = new SimSageSearch();
-$session_id = $search->sign_in("test@simsage.nz", "");
+$search->sign_in("test@simsage.nz", "");
 if ($search->session_id != "") {
     $result = $search->do_search("test");
 
