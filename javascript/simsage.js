@@ -1,12 +1,20 @@
+//
+// JavaScript helper functions
+//
 
+// the api at present is always 1
 let api_version = '1';
+// store a session_id locally if we can - see if we have one
+// careful - this session_id could expire if you use this sample code for a long time
+// in which case you'll have to manually remove it from your browser - or uncomment the next line:
+// set_local_storage("session_id", null);
 let session_id = get_local_storage("session_id");
 
-// pagination
+// pagination - always page 0 for now, and 10 per page
 let page = 0;
 let page_size = 10;
 
-// result data after search
+// variables for result data after search
 let semantic_search_results = [];
 let num_results = 0;
 let num_pages = 0;
@@ -16,12 +24,20 @@ let shard_size_list = [];
 
 // a few constants - just leave them as they are
 let fragment_count = 1;
-let max_word_distance = 20;
+let max_word_distance = 40;
 let use_spelling_suggest = false;
-
 
 ///////////////////////////////////////////////
 
+/**
+ * sign-into SimSage - most instances don't allow anonymous querying
+ * you'll need to use the admin UX of your instance to create a user
+ * and a password
+ *
+ * @param text          what to search for (e.g. "test")
+ * @param data          a data-block with SimSage details, like organisation, knowledge-base, and user information
+ * @param callback      where to callback to when the search has completed successfully
+ */
 function sign_in_and_search_for(text, data, callback) {
     // if we don't have a session - we need to get one - sign-in!
     if (!session_id) {
@@ -29,39 +45,30 @@ function sign_in_and_search_for(text, data, callback) {
             "email": data.email,
             "password": data.password
         };
-        post_message(data.base_url, '/api/auth/sign-in',
+        // sign in
+        post_message(data.api_base, '/auth/sign-in',
             sign_in_data,
             function (data) {
                 // got it?  set the session_id
                 if (data && data.session && data.session.id) {
+                    // store the session locally
                     session_id = data.session.id;
                     set_local_storage("session_id", session_id);
-                    // and perform a search
+                    // and perform a search now that we have a session
                     do_search(text, data, callback);
+
+                } else {
+                    alert("sign-in return data not right?");
                 }
             }
         );
     } else {
-        // we have a session, perform a search
+        // we have a session already, perform a search
         do_search(text, data, callback);
     }
 }
 
 ///////////////////////////////////////////////
-
-
-// get a random number as a 4 digit hex-string
-function s4() {
-    return Math.floor((1 + Math.random()) * 0x10000)
-        .toString(16)
-        .substring(1);
-}
-
-// combine a series of random four digits to create a guid
-function guid() {
-    return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
-}
-
 
 // test if the browser supports local storage
 function has_local_storage() {
@@ -75,7 +82,7 @@ function has_local_storage() {
     }
 }
 
-
+// retrieve an item from browser local storage
 function get_local_storage(name) {
     let hasLs = has_local_storage();
     if (hasLs) {
@@ -84,39 +91,30 @@ function get_local_storage(name) {
     return "";
 }
 
-
+// set/or remove an item from browser local storage
 function set_local_storage(name, value) {
     let hasLs = has_local_storage();
     if (hasLs) {
-        localStorage.setItem(name, value);
+        if (value)
+            localStorage.setItem(name, value);
+        else
+            localStorage.removeItem(name);
     }
 }
 
-
-// fixed client-id to keep track (anonymously) of clients
-// this aggregates number of searches per day per unique user
-// what users search for etc.
-function get_client_id() {
-    let key = 'simsearch_client_id';
-    let clientId = get_local_storage(key);
-    if (!clientId) {
-        clientId = guid();
-        set_local_storage(key, clientId);
-    }
-    return clientId;
-}
-
-
-// helper - post a message using jQuery
-function post_message(base_url, endPoint, data, callback) {
-    let url = base_url + endPoint;
+// helper - post a message to SimSage using jQuery
+function post_message(api_base, endPoint, data, callback) {
+    let url = api_base + endPoint;
+    // these are our standard headers
     let headers = {
         'Content-Type': 'application/json',
         'API-Version': api_version,
     };
+    // add our session_id to our header if we have one
     if (session_id && session_id.length > 0) {
         headers["session-id"] = session_id;
     }
+    // and POST the search data into SimSage
     jQuery.ajax({
         headers: headers,
         'data': JSON.stringify(data),
@@ -124,6 +122,7 @@ function post_message(base_url, endPoint, data, callback) {
         'url': url,
         'dataType': 'json',
         'success': function (data) {
+            // callback on success
             if (callback) {
                 callback(data);
             }
@@ -133,33 +132,7 @@ function post_message(base_url, endPoint, data, callback) {
     });
 }
 
-
-
-// perform the search
-function do_search(text, data, callback) {
-    // search in data-structure
-    let clientQuery = {
-        'organisationId': data.organisation_id,
-        'kbList': [data.kb_id],
-        'clientId': session_id ? session_id : get_client_id(),
-        'semanticSearch': true,
-        'query': text,
-        'page': page,
-        'pageSize': page_size,
-        'shardSizeList': shard_size_list,
-        'fragmentCount': fragment_count,
-        'maxWordDistance': max_word_distance,
-        'spellingSuggest': use_spelling_suggest,
-    };
-
-    // do the search
-    post_message(data.base_url, '/api/semantic/query', clientQuery, function(data) {
-        receive_search_results(data, callback);
-    });
-}
-
-
-// callback on-result
+// Search result callback handler
 function receive_search_results(data, callback) {
     if (data.messageType === 'message') {
         semantic_search_results = [];
@@ -194,7 +167,7 @@ function receive_search_results(data, callback) {
             shard_size_list = [];
         }
 
-        // output the results
+        // output the results to the browser's console too
         console.log('the search results');
         console.log(JSON.stringify(semantic_search_results));
         console.log('page:' + page);
@@ -210,3 +183,26 @@ function receive_search_results(data, callback) {
     } // if message-type is right
 }
 
+
+// perform the search
+function do_search(text, data, callback) {
+    // search in data-structure
+    let clientQuery = {
+        'organisationId': data.organisation_id,
+        'kbList': [data.kb_id],
+        'clientId': session_id,
+        'semanticSearch': true,
+        'query': text,
+        'page': page,
+        'pageSize': page_size,
+        'shardSizeList': shard_size_list,
+        'fragmentCount': fragment_count,
+        'maxWordDistance': max_word_distance,
+        'spellingSuggest': use_spelling_suggest,
+    };
+
+    // do the search
+    post_message(data.api_base, '/semantic/query', clientQuery, function(data) {
+        receive_search_results(data, callback);
+    });
+}

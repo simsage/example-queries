@@ -1,0 +1,48 @@
+<html lang="en">
+<head>
+    <title>search example</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="simsage.js"></script>
+</head>
+<body>
+    <div id="results"></div>
+</body>
+
+<script>
+    // do a search example
+    jQuery(document).ready(() => {
+        const data = {
+            // Set your ids and constants for SimSage (must come from SimSage)
+            // the service layer end-point, change "<server>" to ... (no / at end)
+            api_base: "https://test.simsage.ai/api",
+            // the organisation id to search
+            organisation_id: "c276f883-e0c8-43ae-9119-df8b7df9c574",
+            // the knowledge base id
+            kb_id: "46ff0c75-7938-492c-ab50-442496f5de51",
+            // the credentials for talking to the API / getting a session
+            email: "test@simsage.nz",
+            password: "",
+        };
+
+        if (!data.organisation_id || !data.kb_id || !data.email || !data.password) {
+            alert("please set up organisation/knowledge-base, email (username) and password first in simsage-search.html");
+        } else {
+
+            sign_in_and_search_for('test', data, (result_list) => {
+                // on success - just add a couple of ugly divs for each result
+                // to the "results" id above - just to demonstrate a search
+                // no styling here!
+                for (const result of result_list) {
+                    if (result && result.textList && result.textList.length > 0) {
+                        const text = result.textList[0];
+                        const result_div = document.createElement("div");
+                        result_div.textContent = result.url + " - " + text;
+                        jQuery("#results").append(result_div);
+                    }
+                }
+            })
+        }
+    })
+</script>
+
+</html>
