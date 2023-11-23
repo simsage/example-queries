@@ -29,6 +29,7 @@ def sign_in(username, password):
     return json_result["session"]["id"]
 
 
+# search SimSage using a session_id, and text to search for
 def do_search(session_id, text):
     data = {
         'organisationId': organisation_id,
