@@ -20,7 +20,7 @@ class SimSageSearch
     const kb_id = '46ff0c75-7938-492c-ab50-442496f5de51';
 
     // our test server
-    const base_url = 'https://test.simsage.ai/api';
+    const base_api = 'https://test.simsage.ai/api';
     const api_version = '1';
 
     // pagination - starting at page 0, etc.
@@ -102,7 +102,7 @@ class SimSageSearch
         ];
         // sign in
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, self::base_url . '/auth/sign-in');
+        curl_setopt($ch, CURLOPT_URL, self::base_api . '/auth/sign-in');
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -163,7 +163,7 @@ class SimSageSearch
 
         // make sure you install php8-curl or equivalent for this to work (e.g. sudo apt install php-curl)
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, self::base_url . '/semantic/query');
+        curl_setopt($ch, CURLOPT_URL, self::base_api . '/semantic/query');
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($clientQuery));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -231,5 +231,5 @@ if ($search->session_id != "") {
 }
 else
 {
-    echo "\nmake sure you set password below to a sane value\n";
+    echo "\nmake sure you set up your SimSage user, password, base_api, organisation_id and kb_id\n";
 }
