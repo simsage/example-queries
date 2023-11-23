@@ -88,6 +88,7 @@ const authSlice = createSlice({
             .addCase(signIn.rejected, (state, action) => {
                 state.reset_password_request = false;
                 state.error_message = get_error(action);
+                console.log(action);
                 console.error("rejected: password-sign-in:" + state.error_message);
             })
 
@@ -99,6 +100,12 @@ export const signIn = createAsyncThunk(
     'authSlice/signIn',
     async ({username, password}, {rejectWithValue}) => {
         const api_base = window.ENV.api_base;
+
+        if (!api_base || !username || !password) {
+            alert("please set up /public/settings.js with the base_url, username, and password for your SimSage instance");
+            return rejectWithValue({message: "not set up"});
+        }
+
         const url = api_base + '/auth/sign-in';
         return axios.post(url, {"email": username, "password": password}, get_headers(null))
             .then((response) => {

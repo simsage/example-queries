@@ -33,9 +33,6 @@ export const PageLayout = () => {
         }
     }, [session?.id, dispatch])
 
-    // const is_authenticated = session && session.id && session.id.length > 0;
-    // const show_search = is_authenticated || window.ENV.allow_anon;
-
     return (
         <div>
             <Search

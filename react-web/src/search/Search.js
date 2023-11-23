@@ -20,7 +20,7 @@ function Search(props) {
     const dispatch = useDispatch();
     const {show_search_results, search_focus, busy, has_info} = useSelector((state) => state.searchReducer);
     const {shard_list, search_text} = useSelector((state) => state.searchReducer);
-    const {session, organisation, user} = useSelector((state) => state.authReducer);
+    const {session, user} = useSelector((state) => state.authReducer);
 
     useEffect(() => {
         if (!has_info)
@@ -54,9 +54,7 @@ function Search(props) {
 
             <div className={(busy) ? "wait-cursor outer" : "outer"}>
 
-                { (!show_search_results) &&
-                    <TitleBar on_search={() => search({next_page: false})} />
-                }
+                <TitleBar on_search={() => search({next_page: false})} />
 
                 { show_search_results &&
                     <div className="inner overflow-hidden">

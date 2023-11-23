@@ -233,9 +233,6 @@ export function get_error(action) {
         else
             final_str = str4;
     }
-    if (window.ENV.friendly_error_messages) {
-        return to_friendly_message(final_str);
-    }
     return final_str;
 }
 
