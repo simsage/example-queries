@@ -1,4 +1,4 @@
-# SimSage Search python example
+# SimSage Search python 3 example
 
 ## use
 Set up the right values for your SimSage instance in `main.py` (See line 6 onwards).
